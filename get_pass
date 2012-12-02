@@ -28,6 +28,11 @@ which gpg &>/dev/null || {
   exit 1
 }
 
+test -f $PASSWORD_FILE || {
+  echo " => Password file ($PASSWORD_FILE) not found. Exit."
+  exit 1
+}
+
 read -p 'Password: ' -n 50 -s password
 data=$(echo -n $password | gpg -q --passphrase-fd 0 \
   --no-secmem-warning \
