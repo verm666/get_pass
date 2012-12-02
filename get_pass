@@ -29,7 +29,7 @@ which gpg &>/dev/null || {
 }
 
 test -f $PASSWORD_FILE || {
-  echo " => Password file ($PASSWORD_FILE) not found. Exit."
+  echo " => password file ($PASSWORD_FILE) not found. Exit."
   exit 1
 }
 
