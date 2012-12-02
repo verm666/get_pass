@@ -1,0 +1,68 @@
+#!/bin/bash
+
+PASSWORD_FILE="$HOME/Dropbox/pass.gpg"
+
+platform=$(uname)
+
+case $uname in
+  "Linux")
+    XSEL=$(which xsel)
+    exit_status=$?
+    if [ $exit_status -ne 0 ]; then
+      echo " => xsel not found. Exit."
+      exit 1
+    fi
+    alias pbcopy='xsel --clipboard --input'
+  ;;
+  "Darwin")
+    # All right!
+  ;;
+  "FreeBSD")
+    echo "FreeBSD? Meh... Exit."
+    exit 1
+  ;;
+esac
+
+which gpg &>/dev/null || {
+  echo " => gpg not found. Exit."
+  exit 1
+}
+
+read -p 'Password: ' -n 50 -s password
+data=$(echo -n $password | gpg -q --passphrase-fd 0 \
+  --no-secmem-warning \
+  --no-mdc-warning \
+  --no-tty \
+  --decrypt $PASSWORD_FILE 2>/dev/null)
+
+exit_status=$?
+echo ""
+
+if [ $exit_status -ne 0 ]; then
+  echo " => wrong password"
+  exit 1
+fi
+
+
+OLD_IFS=$IFS
+IFS=$'\n'
+for line in $data; do
+  names+=( $(echo $line | awk -F $'\t+' '{ print $1; }') )
+  passwords+=( $(echo $line | awk -F $'\t+' '{ print $2; }') )
+done
+
+IFS=$OLD_IFS
+
+i=0
+for name in "${names[@]}"; do
+  echo "$i) $name"
+  i=$(($i+1))
+done
+
+read -p 'Input number: ' -n 3 number
+if [ $number -gt $((${#names[@]}-1)) ]; then
+  echo " => wrong number. Exit."
+fi
+
+echo -n ${passwords[$number]} | pbcopy
+exit 0
