@@ -67,6 +67,7 @@ done
 read -p 'Input number: ' -n 3 number
 if [ $number -gt $((${#names[@]}-1)) ]; then
   echo " => wrong number. Exit."
+  exit 1
 fi
 
 echo -n ${passwords[$number]} | pbcopy
